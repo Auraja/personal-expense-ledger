@@ -1,39 +1,62 @@
 # Personal Expense Ledger
 
-A self-hosted personal expense dashboard for recording, reviewing, and exporting transactions with a privacy-first local data model.
+Personal Expense Ledger is a self-hosted dashboard for recording, reviewing, and understanding everyday income and expenses.
 
-## Features
+It is designed for people who want control over their financial records without sending the underlying ledger to a hosted service.
 
-- Transaction entry and editing
-- Category, account, merchant, and date metadata
-- Analytics and reporting views
-- Spreadsheet export
-- Image-assisted transaction intake through an external helper/API boundary
-- Session-protected dashboard
-- Prisma-backed SQLite persistence
-- Docker Compose deployment with a loopback-only host binding
+## What it helps with
 
-## Architecture
+- Recording income and expenses
+- Tracking merchants, categories, accounts, dates, notes, and references
+- Reviewing transactions in one searchable dashboard
+- Understanding spending through analytics and summaries
+- Exporting reports for personal use
+- Using image-assisted intake through a separate helper/API boundary
+- Protecting the dashboard with a login
 
-```text
-Browser
-  |
-Next.js dashboard (:3000)
-  |
-Prisma
-  |
-SQLite volume (/app/data/expense.db)
-```
+The project is intentionally self-hosted: the database and transaction records remain on the machine where the application is deployed.
 
-The runtime database and personal transaction records are stored in a Docker volume and are intentionally excluded from Git.
+## Privacy model
 
-## Development
+Personal financial data is runtime data, not source code.
 
-Requirements: Node.js 22+, npm, and Docker for the container workflow.
+The repository contains the application, tests, migrations, and safe configuration examples. It does not contain real transactions, exports, backups, database files, credentials, or personal account data.
+
+For a private deployment:
+
+- keep `.env` outside Git
+- use a strong dashboard password
+- generate a unique `SESSION_SECRET`
+- protect remote access with HTTPS and an authenticated proxy or tunnel
+- review exports before sharing them
+- keep Docker volumes and backups protected
+
+The public repository is safe to inspect, but your deployed instance and its database should still be treated as private.
+
+## Quick start with Docker
+
+Requirements: Node.js 22+, npm, Docker Engine, and Docker Compose v2.
 
 ```bash
 cp .env.example .env
-# Fill the local values; never commit .env
+# Fill in the local values; never commit .env
+
+docker compose build
+docker compose up -d
+```
+
+The dashboard is available at:
+
+```text
+http://127.0.0.1:3010
+```
+
+The default host binding is loopback-only. Use a trusted reverse proxy or tunnel when remote access is needed.
+
+## Local development
+
+```bash
+cp .env.example .env
 npm install
 npm run db:generate
 npm run lint
@@ -42,25 +65,23 @@ npm test
 npm run build
 ```
 
-## Docker
+Use synthetic data for development and demos. Do not copy a real personal database into the repository or test fixtures.
 
-```bash
-cp .env.example .env
-# Set HERMES_API_TOKEN, DASHBOARD_PASSWORD, and SESSSION_SECRET
-docker compose build
-docker compose up -d
-```
+## Configuration
 
-The dashboard binds to `127.0.0.1:3010` by default. Put it behind an authenticated reverse proxy or tunnel when remote access is required.
+The example environment file documents the available settings:
 
-## Security and privacy
+- `HOST_PORT` — local host port for the dashboard
+- `DASHBOARD_PASSWORD` — password for local dashboard access
+- `SESSION_SECRET` — a long, random session-signing secret
+- `HERMES_API_TOKEN` — optional token for the external image-assisted intake integration
 
-- Never commit `.env`, database files, backups, exports, or real transaction data.
-- Use generated secrets for `SESSION_SECRET`.
-- Use a strong dashboard password.
-- Use synthetic seed data for demos and tests.
-- Review exports before sharing them.
+Leave optional integrations empty when they are not needed. Use different secrets for every deployment.
 
-## Status
+## Data and backups
 
-This repository is prepared as a portfolio candidate. Production credentials and personal ledger data are kept outside the source tree.
+The application stores its SQLite database in the Docker data volume. Backups should be encrypted, access-controlled, and kept separate from the source repository. Before importing or exporting data, verify that the file contains only the records you intend to handle.
+
+## Project status
+
+This is a working self-hosted application and portfolio project. The main ledger, analytics, export, authentication, Docker, and image-assisted intake foundations are in place. Future improvements may include richer reporting, import tools, and additional privacy controls.
