@@ -1,0 +1,21 @@
+import React from 'react';
+import { BudgetProgress, Empty } from './analytics';
+import { money } from './ledger-model';
+import type { Account, Budget, Category, Entry, Resource } from './ledger-types';
+
+type Props = { kind: Exclude<Resource, 'transactions'>; accounts: Account[]; categories: Category[]; budgets: Budget[]; onEdit: (kind: Resource, entry: Entry) => void; onDelete: (kind: Resource, entry: Entry) => void };
+
+function CategorySection({ type, categories, actions }: { type: 'expense' | 'income'; categories: Category[]; actions: (entry: Entry, name: string) => React.ReactNode }) {
+  const ordered = categories.filter(category => category.type === type).sort((a, b) => b.transactionCount - a.transactionCount || b.totalAmount - a.totalAmount || a.name.localeCompare(b.name));
+  const used = ordered.filter(category => category.transactionCount > 0);
+  const other = ordered.filter(category => category.transactionCount === 0);
+  const renderCategory = (category: Category) => <article key={category.id} className="category-item"><div className="category-info"><span className="category-mark" title={category.icon} aria-hidden="true">{category.name.slice(0, 1)}</span><div><h3>{category.name}</h3><p className="muted tiny">{category.transactionCount} transactions</p></div><strong className="figure">{money(category.totalAmount)}</strong></div>{actions(category as Entry, category.name)}</article>;
+  return <section className="panel category-panel"><header className="section-heading"><div><h2>{type === 'expense' ? 'Expense' : 'Income'} categories</h2><p className="muted tiny">Used categories stay visible; the rest are tucked below.</p></div></header>{used.length ? <><p className="eyebrow category-label">USED IN YOUR LEDGER</p><div className="category-list">{used.map(renderCategory)}</div></> : <Empty>No {type} categories used yet.</Empty>}{other.length > 0 && <details className="category-secondary"><summary>Other categories <span className="badge">{other.length}</span></summary><div className="category-list">{other.map(renderCategory)}</div></details>}</section>;
+}
+
+export function ResourceCards({ kind, accounts, categories, budgets, onEdit, onDelete }: Props) {
+  const actions = (entry: Entry, name: string) => <div className="resource-actions"><button aria-label={`Edit ${name}`} onClick={() => onEdit(kind, entry)}>Edit</button><button className="danger-text" aria-label={`Delete ${name}`} onClick={() => onDelete(kind, entry)}>Delete</button></div>;
+  if (kind === 'accounts') return <><p className="muted section-intro">These are the accounts used by your ledger: ShopeePay, GoPay, BRI, and blu by BCA.</p>{accounts.length ? <div className="resource-grid">{accounts.map(a => <article key={a.id} className="panel account-detail"><header className="section-heading"><h2>{a.name}</h2><span className="badge capitalize">{a.type === 'ewallet' ? 'E-wallet' : a.type}</span></header><p className="eyebrow">CURRENT BALANCE</p><strong className="metric-value">{money(a.currentBalance)}</strong><dl className="record-facts"><div><dt>Opening balance</dt><dd className="figure">{money(a.initialBalance)}</dd></div><div><dt>Total income</dt><dd className="figure positive">{money(a.totalIncome)}</dd></div><div><dt>Total expenses</dt><dd className="figure">{money(a.totalExpenses)}</dd></div><div><dt>Transactions</dt><dd>{a.transactionCount}</dd></div></dl>{actions(a as Entry, a.name)}</article>)}</div> : <Empty>No accounts yet. Add your first account to begin.</Empty>}</>;
+  if (kind === 'categories') return <div className="category-columns"><CategorySection type="expense" categories={categories} actions={actions} /><CategorySection type="income" categories={categories} actions={actions} /></div>;
+  return <>{budgets.length ? <div className="resource-grid">{budgets.map(b => <article key={b.id} className="panel budget-detail"><p className="eyebrow">{new Date(b.year, b.month - 1, 1).toLocaleString('en-GB', { month: 'long', year: 'numeric' })}</p><BudgetProgress budget={b} /><p className="muted tiny">{b.spent > b.amount ? `${money(b.spent - b.amount)} over your limit` : `${money(b.amount - b.spent)} remaining`}</p>{actions(b as Entry, b.category?.name || 'budget')}</article>)}</div> : <Empty>No budgets for this month. Set a monthly limit to get started.</Empty>}</>;
+}

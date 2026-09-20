@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "sqlite"
+  url = env("DATABASE_URL")
+}
+model Account {
+  id String @id @default(cuid())
+  name String @unique
+  type String
+  initialBalance Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  transactions Transaction[]
+  settings Settings[]
+}
+model Category {
+  id String @id @default(cuid())
+  name String
+  type String
+  icon String @default("tag")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  transactions Transaction[]
+  budgets Budget[]
+  @@unique([name,type])
+}
+model Transaction {
+  id String @id @default(cuid())
+  type String
+  amount Int
+  description String
+  categoryId String
+  accountId String
+  transactionDate String
+  transactionTime String?
+  notes String?
+  referenceNumber String?
+  referenceKey String? @unique
+  duplicateKey String @unique
+  sourceType String @default("manual")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  category Category @relation(fields:[categoryId],references:[id],onDelete:Restrict)
+  account Account @relation(fields:[accountId],references:[id],onDelete:Restrict)
+  @@index([transactionDate])
+  @@index([accountId,transactionDate])
+  @@index([categoryId,transactionDate])
+}
+model Budget {
+  id String @id @default(cuid())
+  categoryId String
+  amount Int
+  month Int
+  year Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  category Category @relation(fields:[categoryId],references:[id],onDelete:Restrict)
+  @@unique([categoryId,month,year])
+}
+model Settings {
+  id String @id @default("default")
+  displayName String @default("Personal")
+  currency String @default("IDR")
+  locale String @default("id-ID")
+  timezone String @default("Asia/Jakarta")
+  defaultAccountId String?
+  theme String @default("classic-light")
+  defaultAccount Account? @relation(fields:[defaultAccountId],references:[id],onDelete:Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

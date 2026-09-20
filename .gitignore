@@ -1,0 +1,21 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+data/
+backups/
+*.db*
+*.tsbuildinfo
+artifacts/
+
+# Privacy, credentials, exports, and generated files
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.xlsx
+*.csv
+*.jsonl
+existing-baseline.json

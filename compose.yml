@@ -1,0 +1,40 @@
+name: personal-expense-ledger
+services:
+  expense-dashboard:
+    build: .
+    image: personal-expense-ledger:1.0.0
+    container_name: expense-dashboard
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:${HOST_PORT:-3010}:3000"
+    environment:
+      NODE_ENV: production
+      TZ: Asia/Jakarta
+      DATABASE_URL: file:/app/data/expense.db
+      HERMES_API_TOKEN: ${HERMES_API_TOKEN:?Set HERMES_API_TOKEN}
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD:?Set DASHBOARD_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET}
+    volumes:
+      - expense_data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(async r=>{if(!r.ok || (await r.json()).status!=='ok')process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 20s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+    mem_limit: 768m
+    cpus: 1.5
+    pids_limit: 128
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+volumes:
+  expense_data:
+    name: expense_data

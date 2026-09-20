@@ -1,0 +1,38 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": SQLite database "seed-test.db" at "file:/tmp/seed-test.db"
+
+SQLite database seed-test.db created at file:/tmp/seed-test.db
+
+1 migration found in prisma/migrations
+
+Applying migration `20260906000000_init`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260906000000_init/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+npm notice
+npm notice New major version of npm available! 10.9.8 -> 12.0.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+npm notice To update run: npm install -g npm@12.0.2
+npm notice
+TAP version 13
+# Subtest: restarts preserve renamed and deleted default resources
+ok 1 - restarts preserve renamed and deleted default resources
+  ---
+  duration_ms: 2178.459548
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3145.4009
